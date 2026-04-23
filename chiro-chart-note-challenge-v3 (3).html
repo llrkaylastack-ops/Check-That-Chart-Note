@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chiro Chart Note Challenge</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --jane-teal: #00b5b5;
+    --jane-dark: #1a2b3c;
+    --jane-mid: #2d4a6b;
+    --jane-light: #e8f4f4;
+    --jane-white: #ffffff;
+    --jane-green: #22c55e;
+    --jane-red: #ef4444;
+    --jane-yellow: #f59e0b;
+    --jane-gray: #6b7280;
+    --jane-border: #d1e0e0;
+    --correct: #dcfce7;
+    --correct-border: #22c55e;
+    --wrong: #fee2e2;
+    --wrong-border: #ef4444;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #f0f8f8;
+    color: var(--jane-dark);
+    min-height: 100vh;
+  }
+  header {
+    background: var(--jane-dark);
+    color: white;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  header .logo {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--jane-teal);
+    letter-spacing: -0.5px;
+  }
+  header .tagline {
+    font-size: 13px;
+    color: rgba(255,255,255,0.6);
+    margin-left: auto;
+  }
+
+  /* ── SCREENS ── */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ── START ── */
+  #start-screen {
+    max-width: 680px;
+    margin: 60px auto;
+    padding: 0 20px;
+    text-align: center;
+  }
+  .start-badge {
+    display: inline-block;
+    background: var(--jane-teal);
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+  #start-screen h1 {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--jane-dark);
+    margin-bottom: 16px;
+    line-height: 1.2;
+  }
+  #start-screen h1 span { color: var(--jane-teal); }
+  #start-screen p {
+    font-size: 16px;
+    color: var(--jane-gray);
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+  .round-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin: 24px 0;
+  }
+  .round-pill {
+    background: var(--jane-light);
+    border: 1px solid var(--jane-border);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--jane-mid);
+  }
+  .phi-notice {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #92400e;
+    margin-bottom: 28px;
+    text-align: left;
+  }
+  .btn-start {
+    background: var(--jane-teal);
+    color: white;
+    border: none;
+    padding: 16px 40px;
+    font-size: 18px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .btn-start:hover { background: #009999; transform: translateY(-1px); }
+
+  /* ── GAME ── */
+  #game-screen { max-width: 900px; margin: 0 auto; padding: 24px 20px; }
+
+  .progress-bar-wrap {
+    background: var(--jane-border);
+    border-radius: 4px;
+    height: 6px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--jane-teal);
+    border-radius: 4px;
+    transition: width 0.4s ease;
+  }
+  .game-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .round-tag {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 4px;
+    color: white;
+  }
+  .round-spot { background: #6366f1; }
+  .round-rate { background: #f59e0b; }
+  .round-fix  { background: #ef4444; }
+  .round-ins  { background: #0ea5e9; }
+  .round-tf   { background: #22c55e; }
+
+  .score-display {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--jane-mid);
+    font-family: 'DM Mono', monospace;
+  }
+  .q-counter {
+    font-size: 13px;
+    color: var(--jane-gray);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .question-card {
+    background: white;
+    border: 1px solid var(--jane-border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .question-text {
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1.5;
+    margin-bottom: 20px;
+    color: var(--jane-dark);
+  }
+
+  /* Jane note rendering */
+  .jane-note {
+    background: #f9fafb;
+    border: 1px solid var(--jane-border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+    font-size: 13px;
+  }
+  .jane-note-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--jane-border);
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .jane-note-header .note-title {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--jane-dark);
+    font-family: 'DM Mono', monospace;
+  }
+  .jane-note-header .note-meta {
+    font-size: 12px;
+    color: var(--jane-gray);
+    font-family: 'DM Mono', monospace;
+  }
+  .note-section { margin-bottom: 12px; }
+  .note-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--jane-teal);
+    margin-bottom: 6px;
+  }
+  .note-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 4px;
+    align-items: flex-start;
+  }
+  .note-label {
+    font-weight: 600;
+    color: var(--jane-mid);
+    min-width: 160px;
+    font-size: 12px;
+  }
+  .note-val { color: var(--jane-dark); font-size: 12px; flex: 1; }
+  .note-val.blank {
+    color: #d1d5db;
+    font-style: italic;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+  }
+  .note-val.checked::before { content: "✓ "; color: var(--jane-teal); font-weight: 700; }
+  .checked-group { display: flex; flex-wrap: wrap; gap: 6px; }
+  .checked-item {
+    background: var(--jane-light);
+    border: 1px solid var(--jane-border);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    color: var(--jane-mid);
+  }
+  .spine-diagram {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+  .spine-col { font-size: 11px; }
+  .spine-col-title { font-weight: 700; color: var(--jane-gray); margin-bottom: 3px; }
+  .spine-level {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 2px;
+  }
+  .spine-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--jane-border);
+  }
+  .spine-dot.adj { background: var(--jane-teal); }
+  .note-freetext {
+    background: white;
+    border: 1px solid var(--jane-border);
+    border-radius: 4px;
+    padding: 8px 10px;
+    font-size: 12px;
+    color: var(--jane-dark);
+    line-height: 1.5;
+    margin-top: 4px;
+    font-family: 'DM Mono', monospace;
+    white-space: pre-wrap;
+  }
+  .note-freetext.blank-field {
+    color: #d1d5db;
+    font-style: italic;
+  }
+  .note-divider {
+    border: none;
+    border-top: 1px solid var(--jane-border);
+    margin: 10px 0;
+  }
+
+  /* Answers */
+  .answers-grid { display: flex; flex-direction: column; gap: 10px; }
+  .answer-btn {
+    background: white;
+    border: 2px solid var(--jane-border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    text-align: left;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--jane-dark);
+    transition: border-color 0.15s, background 0.15s;
+    line-height: 1.4;
+  }
+  .answer-btn:hover:not(:disabled) {
+    border-color: var(--jane-teal);
+    background: var(--jane-light);
+  }
+  .answer-btn.correct {
+    background: var(--correct);
+    border-color: var(--correct-border);
+  }
+  .answer-btn.wrong {
+    background: var(--wrong);
+    border-color: var(--wrong-border);
+  }
+  .answer-btn:disabled { cursor: default; }
+
+  .explanation-box {
+    background: var(--jane-light);
+    border: 1px solid var(--jane-teal);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-top: 16px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--jane-dark);
+    display: none;
+  }
+  .explanation-box.show { display: block; }
+  .explanation-box strong { color: var(--jane-teal); }
+
+  .btn-next {
+    display: none;
+    margin-top: 16px;
+    background: var(--jane-dark);
+    color: white;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: background 0.2s;
+  }
+  .btn-next:hover { background: var(--jane-mid); }
+  .btn-next.show { display: inline-block; }
+
+  /* ── RESULTS ── */
+  #results-screen {
+    max-width: 680px;
+    margin: 40px auto;
+    padding: 0 20px;
+    text-align: center;
+  }
+  .results-card {
+    background: white;
+    border: 1px solid var(--jane-border);
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .score-big {
+    font-size: 72px;
+    font-weight: 700;
+    color: var(--jane-teal);
+    font-family: 'DM Mono', monospace;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .score-label {
+    font-size: 18px;
+    color: var(--jane-gray);
+    margin-bottom: 24px;
+  }
+  .grade-badge {
+    display: inline-block;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 20px;
+  }
+  .breakdown-title {
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--jane-gray);
+    margin-bottom: 14px;
+    text-align: left;
+  }
+  .breakdown-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 14px;
+  }
+  .bd-label { flex: 1; text-align: left; font-weight: 500; }
+  .bd-bar-wrap {
+    flex: 2;
+    background: #f3f4f6;
+    border-radius: 4px;
+    height: 10px;
+    overflow: hidden;
+  }
+  .bd-bar { height: 100%; border-radius: 4px; background: var(--jane-teal); transition: width 0.6s ease; }
+  .bd-frac { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--jane-gray); min-width: 36px; text-align: right; }
+
+  .btn-play-again {
+    background: var(--jane-teal);
+    color: white;
+    border: none;
+    padding: 14px 36px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: background 0.2s;
+    margin-top: 8px;
+  }
+  .btn-play-again:hover { background: #009999; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">jane</div>
+  <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-left:8px;">| Billing Education</div>
+  <div class="tagline">Chiro Chart Note Challenge</div>
+</header>
+
+<!-- START SCREEN -->
+<div id="start-screen" class="screen active">
+  <div class="start-badge">🎮 Game Show Edition</div>
+  <h1>Chiro Chart Note <span>Challenge</span></h1>
+  <p>Think you can spot a billing red flag in a Chiro note? These are real-style Jane chart notes — your job is to read them like a biller.</p>
+  <p>Would you submit this claim? Would you flag it? Could you explain a denial? Let's find out.</p>
+  <div class="round-pills">
+    <div class="round-pill">🔍 Spot It</div>
+    <div class="round-pill">⭐ Rate It</div>
+    <div class="round-pill">🔧 Fix It</div>
+    <div class="round-pill">💼 Insurance Hot Seat</div>
+    <div class="round-pill">✅ True or False</div>
+  </div>
+  <div class="phi-notice">
+    ⚠️ <strong>PHI Notice:</strong> All patient names, dates, and identifying information in these notes are fictional. These are training scenarios only.
+  </div>
+  <button class="btn-start" onclick="startGame()">Start the Challenge →</button>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="game-screen" class="screen">
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
+  <div class="game-meta">
+    <span class="round-tag" id="round-tag">Spot It</span>
+    <span class="q-counter" id="q-counter">Q1 of 15</span>
+    <span class="score-display" id="score-display">Score: 0</span>
+  </div>
+  <div class="question-card" id="question-card">
+    <div class="question-text" id="question-text"></div>
+    <div id="note-display"></div>
+    <div class="answers-grid" id="answers-grid"></div>
+    <div class="explanation-box" id="explanation-box"></div>
+    <button class="btn-next" id="btn-next" onclick="nextQuestion()">Next Question →</button>
+  </div>
+</div>
+
+<!-- RESULTS SCREEN -->
+<div id="results-screen" class="screen">
+  <div class="results-card">
+    <div class="score-big" id="final-score-pct">0%</div>
+    <div class="score-label" id="final-score-label">0 / 15 correct</div>
+    <div class="grade-badge" id="grade-badge"></div>
+    <hr style="border:none;border-top:1px solid var(--jane-border);margin-bottom:20px;">
+    <div class="breakdown-title">Score by Round Type</div>
+    <div id="breakdown-rows"></div>
+  </div>
+  <button class="btn-play-again" onclick="restartGame()">Play Again 🔄</button>
+</div>
+
+<script>
+// ─── NOTES ───────────────────────────────────────────────────────────────────
+
+const NOTES = {
+  n1: {
+    title: "Note A — Visit 3 of 12",
+    meta: "Dx: M54.5 – Low Back Pain | Provider: Dr. S. Tran, DC | Date: [Fictional]",
+    sections: [
+      { title: "Subjective", rows: [
+        { label: "Chief Complaint", val: "Low back pain, central, non-radiating. Patient reports pain 4/10 today, down from 7/10 at initial visit. Able to sit for 30 min without needing to stand (was 10 min at intake).", type: "freetext" },
+        { label: "Pain Scale", val: "4/10 (baseline 7/10 at Visit 1)", type: "text" },
+        { label: "Complaint Progression", val: "Improving", type: "checked" },
+      ]},
+      { title: "Objective", rows: [
+        { label: "ROM – Lumbar Flexion", val: "55° (baseline 35°)", type: "text" },
+        { label: "ROM – Extension", val: "20° (baseline 12°)", type: "text" },
+        { label: "Orthopedic Tests", val: "SLR negative bilaterally", type: "text" },
+        { label: "Tissue Changes", type: "chips", vals: ["Hypertonicity – paraspinals L3-L5", "Tenderness – SI joint bilateral"] },
+        { label: "Neuro Screen", val: "Intact – sensation, motor, reflexes normal", type: "text" },
+      ]},
+      { title: "Assessment", rows: [
+        { label: "Response to Treatment", val: "Patient responding well. Pain reduced 43% from baseline. Functional sitting tolerance doubled. Continuing toward goal of pain-free daily work at desk for 60 min.", type: "freetext" },
+      ]},
+      { title: "Plan", rows: [
+        { label: "Spinal Levels Adjusted", type: "spine", left: ["L3","L4"], right: ["L4","L5"], both: [] },
+        { label: "Techniques Used", type: "chips", vals: ["Diversified", "Drop Table"] },
+        { label: "Modalities", type: "chips", vals: ["Ice – 10 min post-adjust"] },
+        { label: "Functional Goal", val: "Return to desk work 60 min without pain. Target: Visit 8.", type: "text" },
+        { label: "Next Visit", val: "3 days", type: "text" },
+      ]}
+    ]
+  },
+  n2: {
+    title: "Note B — Visit 5 of 12",
+    meta: "Dx: M54.5 – Low Back Pain | Provider: Dr. R. Patel, DC | Date: [Fictional]",
+    sections: [
+      { title: "Subjective", rows: [
+        { label: "Chief Complaint", val: "Patient states back still hurts. Feels a bit better.", type: "freetext" },
+        { label: "Pain Scale", val: "", type: "blank" },
+        { label: "Complaint Progression", val: "", type: "blank" },
+      ]},
+      { title: "Objective", rows: [
+        { label: "ROM – Lumbar Flexion", val: "", type: "blank" },
+        { label: "ROM – Extension", val: "", type: "blank" },
+        { label: "Orthopedic Tests", val: "Negative", type: "text" },
+        { label: "Tissue Changes", type: "chips", vals: ["Hypertonicity – paraspinals"] },
+        { label: "Neuro Screen", val: "Normal", type: "text" },
+      ]},
+      { title: "Assessment", rows: [
+        { label: "Response to Treatment", val: "Improving.", type: "freetext" },
+      ]},
+      { title: "Plan", rows: [
+        { label: "Spinal Levels Adjusted", type: "spine", left: ["L4","L5"], right: ["L5"], both: [] },
+        { label: "Techniques Used", type: "chips", vals: ["Diversified"] },
+        { label: "Modalities", type: "chips", vals: ["Heat – 10 min"] },
+        { label: "Functional Goal", val: "Patient will improve.", type: "text" },
+        { label: "Next Visit", val: "1 week", type: "text" },
+      ]}
+    ]
+  },
+  n3: {
+    title: "Note C — Visit 11 of 12",
+    meta: "Dx: M54.5 – Low Back Pain | Provider: Dr. A. Kim, DC | Date: [Fictional]",
+    sections: [
+      { title: "Subjective", rows: [
+        { label: "Chief Complaint", val: "Patient doing well. Almost discharged.", type: "freetext" },
+        { label: "Pain Scale", val: "1/10", type: "text" },
+        { label: "Complaint Progression", val: "", type: "blank" },
+      ]},
+      { title: "Objective", rows: [
+        { label: "ROM – Lumbar Flexion", val: "", type: "blank" },
+        { label: "ROM – Extension", val: "", type: "blank" },
+        { label: "Orthopedic Tests", val: "", type: "blank" },
+        { label: "Tissue Changes", val: "", type: "blank" },
+        { label: "Neuro Screen", val: "Normal", type: "text" },
+      ]},
+      { title: "Assessment", rows: [
+        { label: "Response to Treatment", val: "Patient much better. Recommend 2 more visits for maintenance.", type: "freetext" },
+      ]},
+      { title: "Plan", rows: [
+        { label: "Spinal Levels Adjusted", type: "spine", left: ["L5"], right: [], both: [] },
+        { label: "Techniques Used", type: "chips", vals: ["Diversified"] },
+        { label: "Modalities", type: "chips", vals: [] },
+        { label: "Functional Goal", val: "", type: "blank" },
+        { label: "Next Visit", val: "2 weeks", type: "text" },
+      ]}
+    ]
+  },
+  n4: {
+    title: "Note D — Visit 2 of 12",
+    meta: "Dx: M54.4 – Lumbago with Sciatica | Provider: Dr. J. Morris, DC | Date: [Fictional]",
+    sections: [
+      { title: "Subjective", rows: [
+        { label: "Chief Complaint", val: "Low back and leg pain.", type: "freetext" },
+        { label: "Pain Scale", val: "", type: "blank" },
+        { label: "Complaint Progression", val: "", type: "blank" },
+        { label: "Leg Pain / Radiation", val: "", type: "blank" },
+      ]},
+      { title: "Objective", rows: [
+        { label: "ROM – Lumbar Flexion", val: "", type: "blank" },
+        { label: "ROM – Extension", val: "", type: "blank" },
+        { label: "Orthopedic Tests", val: "", type: "blank" },
+        { label: "Tissue Changes", type: "chips", vals: ["Hypertonicity – paraspinals"] },
+        { label: "Neuro Screen", val: "", type: "blank" },
+      ]},
+      { title: "Assessment", rows: [
+        { label: "Response to Treatment", val: "Adjusted. Patient tolerated well.", type: "freetext" },
+      ]},
+      { title: "Plan", rows: [
+        { label: "Spinal Levels Adjusted", type: "spine", left: ["L4","L5","S1"], right: ["L5","S1"], both: [] },
+        { label: "Techniques Used", type: "chips", vals: ["Diversified"] },
+        { label: "Modalities", type: "chips", vals: [] },
+        { label: "Functional Goal", val: "", type: "blank" },
+        { label: "Next Visit", val: "3 days", type: "text" },
+      ]}
+    ]
+  }
+};
+
+// ─── NOTE RENDERER ────────────────────────────────────────────────────────────
+function renderNote(noteKey) {
+  const note = NOTES[noteKey];
+  if (!note) return '';
+  let html = `<div class="jane-note"><div class="jane-note-header"><span class="note-title">${note.title}</span><span class="note-meta">${note.meta}</span></div>`;
+  for (const sec of note.sections) {
+    html += `<div class="note-section"><div class="note-section-title">${sec.title}</div>`;
+    for (const row of sec.rows) {
+      html += `<div class="note-row"><span class="note-label">${row.label}</span>`;
+      if (row.type === 'blank') {
+        html += `<span class="note-val blank">— not completed —</span>`;
+      } else if (row.type === 'text') {
+        html += `<span class="note-val">${row.val}</span>`;
+      } else if (row.type === 'checked') {
+        html += `<span class="note-val checked">${row.val}</span>`;
+      } else if (row.type === 'freetext') {
+        html += `<div style="flex:1"><div class="note-freetext">${row.val}</div></div>`;
+      } else if (row.type === 'chips') {
+        if (row.vals && row.vals.length) {
+          html += `<div class="checked-group">${row.vals.map(v=>`<span class="checked-item">✓ ${v}</span>`).join('')}</div>`;
+        } else {
+          html += `<span class="note-val blank">— not completed —</span>`;
+        }
+      } else if (row.type === 'spine') {
+        const levels = ['C1','C2','C3','C4','C5','C6','C7','T1','T2','T3','T4','T5','T6','T7','T8','T9','T10','T11','T12','L1','L2','L3','L4','L5','S1'];
+        const adjLeft = row.left || []; const adjRight = row.right || [];
+        html += `<div style="flex:1"><div class="spine-diagram">`;
+        html += `<div class="spine-col"><div class="spine-col-title">Level</div>${levels.map(l=>`<div class="spine-level"><span style="font-family:'DM Mono',monospace;font-size:11px;min-width:24px">${l}</span></div>`).join('')}</div>`;
+        html += `<div class="spine-col"><div class="spine-col-title">Left</div>${levels.map(l=>`<div class="spine-level"><div class="spine-dot ${adjLeft.includes(l)?'adj':''}"></div></div>`).join('')}</div>`;
+        html += `<div class="spine-col"><div class="spine-col-title">Right</div>${levels.map(l=>`<div class="spine-level"><div class="spine-dot ${adjRight.includes(l)?'adj':''}"></div></div>`).join('')}</div>`;
+        html += `</div></div>`;
+      }
+      html += `</div>`;
+    }
+    html += `</div><hr class="note-divider">`;
+  }
+  html += `</div>`;
+  return html;
+}
+
+// ─── QUESTIONS ────────────────────────────────────────────────────────────────
+const ALL_QUESTIONS = [
+  // SPOT IT
+  {
+    round: "spot", roundLabel: "Spot It", roundClass: "round-spot",
+    note: "n2",
+    text: "🔍 SPOT IT — Note B (Visit 5). You're reviewing this note before submitting a claim. What's the biggest red flag for billing?",
+    answers: [
+      { text: "No pain scale recorded — you can't show the patient is still symptomatic", correct: true },
+      { text: "The wrong diagnosis code was used", correct: false },
+      { text: "Heat was used instead of ice", correct: false },
+      { text: "Too many spinal levels were adjusted", correct: false },
+    ],
+    explanation: "<strong>Correct.</strong> With no pain scale, there's no objective evidence the patient is still in pain by visit 5. If an insurer pulls this note, they'll ask: 'why are we still treating someone when we don't even know their pain level?' No pain scale = no baseline to compare = hard to justify continued care."
+  },
+  {
+    round: "spot", roundLabel: "Spot It", roundClass: "round-spot",
+    note: "n4",
+    text: "🔍 SPOT IT — Note D. The diagnosis is M54.4 (Lumbago with Sciatica). Something critical is missing from the objective section. What is it?",
+    answers: [
+      { text: "No heat or ice modality was charted", correct: false },
+      { text: "No neuro screen documented — but the dx involves nerve symptoms", correct: true },
+      { text: "No next visit date", correct: false },
+      { text: "Missing provider signature", correct: false },
+    ],
+    explanation: "<strong>Correct.</strong> M54.4 is a sciatica diagnosis — that means nerve involvement. A neuro screen (sensation, reflexes, motor testing) is standard documentation for any claim involving nerve symptoms. Without it, the note doesn't support the diagnosis code that was billed."
+  },
+  {
+    round: "spot", roundLabel: "Spot It", roundClass: "round-spot",
+    note: "n3",
+    text: "🔍 SPOT IT — Note C (Visit 11 of 12). The provider wrote 'recommend 2 more visits for maintenance.' What problem does this create for billing?",
+    answers: [
+      { text: "Maintenance care isn't billable to most insurers — this could trigger a denial for those last 2 visits", correct: true },
+      { text: "The note doesn't include enough modalities", correct: false },
+      { text: "The diagnosis code should be changed to a maintenance code", correct: false },
+      { text: "This is only a problem if the patient has secondary insurance", correct: false },
+    ],
+    explanation: "<strong>Correct.</strong> Most commercial insurers and Medicare won't cover maintenance care — they only pay for active/skilled treatment toward measurable goals. Once a provider documents 'maintenance,' they've essentially told the insurer the patient is done improving. Those final visits may get denied."
+  },
+  // RATE IT
+  {
+    round: "rate", roundLabel: "Rate It", roundClass: "round-rate",
+    note: "n1",
+    text: "⭐ RATE IT — Note A (Visit 3). You're about to submit this claim. How confident are you?",
+    answers: [
+      { text: "Not confident — I'd flag this before submitting", correct: false },
+      { text: "Somewhat confident — it's okay but missing a few things", correct: false },
+      { text: "Very confident — this note supports the claim well", correct: true },
+      { text: "I wouldn't submit this at all", correct: false },
+    ],
+    explanation: "<strong>Correct.</strong> Note A is strong. It has a pain scale with baseline comparison (7/10 → 4/10), measurable ROM with before/after numbers, a functional goal tied to a real activity (desk work), neuro screen documented, and clear response to treatment. This is what a supportable claim looks like."
+  },
+  {
+    round: "rate", roundLabel: "Rate It", roundClass: "round-rate",
+    note: "n2",
+    text: "⭐ RATE IT — Note B (Visit 5). If this claim gets audited, how worried should you be?",
+    answers: [
+      { text: "Not worried — the adjustment is documented", correct: false },
+      { text: "A little worried — there are some gaps but nothing major", correct: false },
+      { text: "Very worried — multiple gaps make this difficult to defend", correct: true },
+      { text: "Only worried if it's an insurance claim, not direct billing", correct: false },
+    ],
+    explanation: "<strong>Correct.</strong> Note B has no pain scale, no ROM measurements, no complaint progression, and a functional goal that says 'patient will improve' — which is not measurable. An auditor would see this as a note that doesn't justify continued care. High audit risk."
+  },
+  {
+    round: "rate", roundLabel: "Rate It", roundClass: "round-rate",
+    note: "n3",
+    text: "⭐ RATE IT — Note C (Visit 11). What's your confidence level for billing visits 11 and 12 to insurance?",
+    answers: [
+      { text: "High confidence — the patient is at 1/10 pain so clearly improving", correct: false },
+      { text: "Low confidence — the documentation doesn't justify continuing active care", correct: true },
+      { text: "Medium confidence — it depends on the payer", correct: false },
+      { text: "High confidence — provider said 2 more visits so they must be necessary", correct: false },
+    ],
+    explanation: "<strong>Correct.</strong> A 1/10 pain score is great news for the patient — but bad news for continuing a billable treatment plan. No ROM, no orthopedic tests, no functional goal, and the word 'maintenance' in the plan. This note is more likely to support stopping care than continuing it."
+  },
+  // FIX IT
+  {
+    round: "fix", roundLabel: "Fix It", roundClass: "round-fix",
+    note: "n2",
+    text: "🔧 FIX IT — Note B. If you could ask the provider to fix ONE thing before you submit this claim, what would it be?",
+    answers: [
+      { text: "Add a pain scale with a comparison to the baseline from visit 1", correct: true },
+      { text: "Change the adjustment technique to something more specific", correct: false },
+      { text: "Add more spinal levels to the adjustment", correct: false },
+      { text: "Remove the heat modality — it's not necessary", correct: false },
+    ],
+    explanation: "<strong>Correct.</strong> A pain scale with comparison is the fastest way to establish that care is still medically necessary. '4/10 today vs 8/10 at intake' tells a story. 'Patient feels a bit better' does not. This one addition dramatically improves the defensibility of the claim."
+  },
+  {
+    round: "fix", roundLabel: "Fix It", roundClass: "round-fix",
+    note: "n4",
+    text: "🔧 FIX IT — Note D. The claim has M54.4 (Sciatica). Which addition to the objective section would best support this diagnosis?",
+    answers: [
+      { text: "Add a ROM measurement for lumbar flexion", correct: false },
+      { text: "Document a neuro screen: sensation, reflexes, and motor testing at the affected dermatome", correct: true },
+      { text: "Add a pain scale", correct: false },
+      { text: "Document that diversified technique was used bilaterally", correct: false },
+    ],
+    explanation: "<strong>Correct.</strong> Sciatica is a nerve diagnosis. The objective section needs to show nerve involvement was assessed — dermatome testing, reflexes (like patellar and Achilles), and motor strength. Without it, the note doesn't support billing M54.4. A ROM measurement helps but doesn't address the sciatica-specific gap."
+  },
+  {
+    round: "fix", roundLabel: "Fix It", roundClass: "round-fix",
+    note: "n2",
+    text: "🔧 FIX IT — Note B says the functional goal is 'Patient will improve.' Why is this a problem, and what should it say instead?",
+    answers: [
+      { text: "It's fine — all goals say something like this", correct: false },
+      { text: "It's too vague — a measurable goal like 'walk 30 minutes without pain by visit 8' is defensible; 'will improve' is not", correct: true },
+      { text: "The goal should be written by the patient, not the provider", correct: false },
+      { text: "Goals don't matter for billing — only the diagnosis code does", correct: false },
+    ],
+    explanation: "<strong>Correct.</strong> Insurance payers want to see SMART goals — specific, measurable, achievable, relevant, time-bound. 'Patient will improve' tells an auditor nothing. How much? By when? Toward what activity? A goal like 'return to 8-hour work day without pain by visit 10' is something you can track and defend."
+  },
+  // INSURANCE HOT SEAT
+  {
+    round: "ins", roundLabel: "Insurance Hot Seat", roundClass: "round-ins",
+    note: "n4",
+    text: "💼 INSURANCE HOT SEAT — Note D. The insurer denied the claim saying 'documentation does not support medical necessity.' Which gap is most likely the reason?",
+    answers: [
+      { text: "The provider used Diversified technique which some insurers don't cover", correct: false },
+      { text: "No ROM, no orthopedic tests, no neuro screen, and no functional goal — there's nothing objective to justify the treatment", correct: true },
+      { text: "The visit was too soon after visit 1", correct: false },
+      { text: "The claim was submitted for too many spinal levels", correct: false },
+    ],
+    explanation: "<strong>Correct.</strong> Medical necessity denials almost always come back to: 'show me that the patient needed this, and that it's working.' Note D has no ROM numbers, no ortho tests, no neuro screen (despite a sciatica dx), and no functional goal. There's nothing to show necessity or progress. Classic medical necessity denial."
+  },
+  {
+    round: "ins", roundLabel: "Insurance Hot Seat", roundClass: "round-ins",
+    note: "n3",
+    text: "💼 INSURANCE HOT SEAT — Note C. The insurer is reviewing this extended plan (visits 11–12) and asks: 'what is the medical justification for continuing care?' Based on this note, what do you say?",
+    answers: [
+      { text: "The patient is at 1/10 pain and still needs 2 more visits per the provider", correct: false },
+      { text: "Honestly, this note doesn't give you much to work with — it would be hard to justify extension", correct: true },
+      { text: "The provider used Diversified which requires follow-up visits", correct: false },
+      { text: "The claim is for visit 11, not the extension — you don't need to justify it yet", correct: false },
+    ],
+    explanation: "<strong>Correct.</strong> Extension requests need to show that: (1) the patient still has measurable impairment, and (2) skilled care is still required. Note C has a 1/10 pain score, no ROM measurements, no ortho tests, and the word 'maintenance.' There's very little to build an appeal on. This is why documentation matters at visit 11, not just visit 1."
+  },
+  {
+    round: "ins", roundLabel: "Insurance Hot Seat", roundClass: "round-ins",
+    note: "n1",
+    text: "💼 INSURANCE HOT SEAT — Note A gets flagged for a routine audit. The auditor asks for proof of improvement. What do you pull from this note?",
+    answers: [
+      { text: "The fact that the provider used ice post-adjustment", correct: false },
+      { text: "Pain scale 7/10 → 4/10, ROM improved from 35° to 55° flexion, and sitting tolerance doubled", correct: true },
+      { text: "The negative SLR test", correct: false },
+      { text: "The plan to continue to visit 8", correct: false },
+    ],
+    explanation: "<strong>Correct.</strong> Note A has exactly what auditors want: baseline numbers vs. current numbers. Pain is down 43%. ROM improved measurably. A functional task (sitting) shows real-world progress. This is the kind of documentation that wins audits — and it's what all notes should be working toward."
+  },
+  // TRUE OR FALSE
+  {
+    round: "tf", roundLabel: "True or False", roundClass: "round-tf",
+    note: null,
+    text: "✅ TRUE OR FALSE — If a provider documents 'patient is doing well' and a pain scale of 1/10 in a late-visit note, that's strong evidence to continue billing for active chiropractic care.",
+    answers: [
+      { text: "True — the provider says it's going well, so care is justified", correct: false },
+      { text: "False — low pain and vague positive language actually suggests the patient may no longer need active treatment", correct: true },
+    ],
+    explanation: "<strong>Correct — False.</strong> Ironically, a 1/10 pain score can work against you. Insurers pay for active care toward measurable goals. When a note says 'doing great, almost done,' they may interpret that as: treatment goals have been met, care is no longer medically necessary. The better documentation would show what functional goal still needs to be reached."
+  },
+  {
+    round: "tf", roundLabel: "True or False", roundClass: "round-tf",
+    note: null,
+    text: "✅ TRUE OR FALSE — A blank ROM field in a chiro note for an active LBP plan is just a documentation preference — it doesn't affect billing.",
+    answers: [
+      { text: "True — ROM is optional clinical documentation", correct: false },
+      { text: "False — ROM is one of the primary objective measures used to demonstrate medical necessity and progress", correct: true },
+    ],
+    explanation: "<strong>Correct — False.</strong> ROM (Range of Motion) measurements are not optional for a defensible chiro claim. They're the objective way to show the patient had a deficit and is improving. Without them, all you have is 'provider adjusted patient' — which doesn't justify medical necessity or demonstrate that treatment is working."
+  },
+  {
+    round: "tf", roundLabel: "True or False", roundClass: "round-tf",
+    note: null,
+    text: "✅ TRUE OR FALSE — A chiropractic note that documents 'adjusted L4-L5' with no other objective findings is sufficient to bill a standard chiropractic manipulation code.",
+    answers: [
+      { text: "True — the adjustment is the service, and it's documented", correct: false },
+      { text: "False — billing a manipulation code requires documentation supporting medical necessity, not just that an adjustment occurred", correct: true },
+    ],
+    explanation: "<strong>Correct — False.</strong> Documenting that an adjustment happened is necessary but not sufficient. To support the billing code, the note also needs to show WHY the adjustment was needed (objective findings like ROM, tissue changes, pain scale) and HOW the patient is responding over time. 'Adjusted L4-L5' alone is a denial waiting to happen."
+  },
+];
+
+// ─── GAME STATE ───────────────────────────────────────────────────────────────
+let questions = [];
+let currentQ = 0;
+let score = 0;
+let roundScores = { spot: [0,0], rate: [0,0], fix: [0,0], ins: [0,0], tf: [0,0] };
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function startGame() {
+  questions = shuffle(ALL_QUESTIONS);
+  currentQ = 0;
+  score = 0;
+  roundScores = { spot:[0,0], rate:[0,0], fix:[0,0], ins:[0,0], tf:[0,0] };
+  document.getElementById('start-screen').classList.remove('active');
+  document.getElementById('game-screen').classList.add('active');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = questions[currentQ];
+  const total = questions.length;
+
+  document.getElementById('progress-fill').style.width = `${(currentQ/total)*100}%`;
+  document.getElementById('q-counter').textContent = `Q${currentQ+1} of ${total}`;
+  document.getElementById('score-display').textContent = `Score: ${score}`;
+
+  const tag = document.getElementById('round-tag');
+  tag.textContent = q.roundLabel;
+  tag.className = `round-tag ${q.roundClass}`;
+
+  document.getElementById('question-text').textContent = q.text;
+
+  const noteDiv = document.getElementById('note-display');
+  noteDiv.innerHTML = q.note ? renderNote(q.note) : '';
+
+  document.getElementById('explanation-box').classList.remove('show');
+  document.getElementById('explanation-box').innerHTML = '';
+  const nextBtn = document.getElementById('btn-next');
+  nextBtn.classList.remove('show');
+
+  const grid = document.getElementById('answers-grid');
+  grid.innerHTML = '';
+  const shuffledAnswers = shuffle(q.answers);
+  shuffledAnswers.forEach(ans => {
+    const btn = document.createElement('button');
+    btn.className = 'answer-btn';
+    btn.textContent = ans.text;
+    btn.onclick = () => selectAnswer(ans.correct, q, btn, grid);
+    grid.appendChild(btn);
+  });
+}
+
+function selectAnswer(isCorrect, q, clickedBtn, grid) {
+  Array.from(grid.children).forEach(btn => {
+    btn.disabled = true;
+    const matchText = btn.textContent;
+    const matchAns = q.answers.find(a => a.text === matchText);
+    if (matchAns && matchAns.correct) btn.classList.add('correct');
+  });
+  if (!isCorrect) clickedBtn.classList.add('wrong');
+
+  if (isCorrect) {
+    score++;
+    roundScores[q.round][0]++;
+  }
+  roundScores[q.round][1]++;
+
+  const expBox = document.getElementById('explanation-box');
+  expBox.innerHTML = q.explanation;
+  expBox.classList.add('show');
+  document.getElementById('btn-next').classList.add('show');
+  document.getElementById('score-display').textContent = `Score: ${score}`;
+}
+
+function nextQuestion() {
+  currentQ++;
+  if (currentQ >= questions.length) {
+    showResults();
+  } else {
+    renderQuestion();
+  }
+}
+
+function showResults() {
+  document.getElementById('progress-fill').style.width = '100%';
+  document.getElementById('game-screen').classList.remove('active');
+  document.getElementById('results-screen').classList.add('active');
+
+  const pct = Math.round((score / questions.length) * 100);
+  document.getElementById('final-score-pct').textContent = `${pct}%`;
+  document.getElementById('final-score-label').textContent = `${score} / ${questions.length} correct`;
+
+  const badge = document.getElementById('grade-badge');
+  if (pct >= 90) { badge.textContent = '🏆 Expert Biller'; badge.style.background='#dcfce7'; badge.style.color='#166534'; }
+  else if (pct >= 70) { badge.textContent = '⭐ Solid Biller Brain'; badge.style.background='#fef9c3'; badge.style.color='#854d0e'; }
+  else if (pct >= 50) { badge.textContent = '📚 Getting There'; badge.style.background='#dbeafe'; badge.style.color='#1e40af'; }
+  else { badge.textContent = '🔄 Keep Practicing'; badge.style.background='#fee2e2'; badge.style.color='#991b1b'; }
+
+  const breakdownLabels = {
+    spot: '🔍 Spot It', rate: '⭐ Rate It', fix: '🔧 Fix It',
+    ins: '💼 Insurance Hot Seat', tf: '✅ True or False'
+  };
+  const bdDiv = document.getElementById('breakdown-rows');
+  bdDiv.innerHTML = '';
+  for (const [key, label] of Object.entries(breakdownLabels)) {
+    const [got, total] = roundScores[key];
+    if (total === 0) continue;
+    const pctRound = total > 0 ? Math.round((got/total)*100) : 0;
+    bdDiv.innerHTML += `
+      <div class="breakdown-row">
+        <span class="bd-label">${label}</span>
+        <div class="bd-bar-wrap"><div class="bd-bar" style="width:${pctRound}%"></div></div>
+        <span class="bd-frac">${got}/${total}</span>
+      </div>`;
+  }
+}
+
+function restartGame() {
+  document.getElementById('results-screen').classList.remove('active');
+  document.getElementById('start-screen').classList.add('active');
+}
+</script>
+</body>
+</html>
